@@ -1,0 +1,12 @@
+{
+  "name": "freefire-auth-server",
+  "version": "1.0.0",
+  "description": "Auth server for Free Fire modified client",
+  "main": "api/index.js",
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
