@@ -1,109 +1,129 @@
-module.exports = (req, res) => {
-    const path = req.url.split('?')[0];
+const express = require('express');
+const axios = require('axios');
+const app = express();
 
-    // مسار تسجيل الدخول عبر فيسبوك
-    if (path === '/auth/facebook' || path === '/dialog/oauth') {
-        const appId = '100223126694380';
-        const redirectUri = `https://${req.headers.host}/auth/facebook/callback`;
-        const fbAuthUrl = `https://www.facebook.com/v12.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=email,public_profile`;
-        
-        res.writeHead(302, { 'Location': fbAuthUrl });
-        return res.end();
-    }
+const FB_APP_ID = process.env.FB_APP_ID;
+const FB_APP_SECRET = process.env.FB_APP_SECRET;
+const REDIRECT_URI = process.env.REDIRECT_URI || 'https://your-domain.vercel.app/auth/facebook/callback';
 
-    // استجابة الـ Callback بعد موافقة المستخدم على تسجيل الدخول فيسبوك
-    if (path === '/auth/facebook/callback') {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head><title>Authentication Success</title></head>
-            <body style="background:#121212; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
-                <h3>Facebook Authentication Successful!</h3>
-                <p>You can now return to the game.</p>
-            </body>
-            </html>
-        `);
-    }
+// 1. الصفحة الرئيسية
+app.get('/', (req, res) => {
+  res.send('This is the authentication endpoint. It is reached by the game client, not by browsers directly.');
+});
 
-    // صفحة شروط الاستخدام (/terms)
-    if (path === '/terms') {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>Terms of Service</title>
-                <style>
-                    body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 20px; line-height: 1.6; }
-                    h2 { color: #ff5722; font-size: 16px; margin-top: 20px; }
-                    p { font-size: 13px; color: #b0b0b0; }
-                    a { color: #ff5722; text-decoration: none; display: inline-block; margin-top: 20px; }
-                </style>
-            </head>
-            <body>
-                <h2>1. ACCEPTANCE</h2>
-                <p>By using this service you agree to these terms.</p>
-                <h2>2. FACEBOOK AUTHENTICATION</h2>
-                <p>Sign-in relies on Facebook OAuth integration.</p>
-                <a href="/">&larr; Back</a>
-            </body>
-            </html>
-        `);
-    }
+// 2. صفحة سياسة الخصوصية (/privacy)
+app.get('/privacy', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Privacy Policy</title>
+      <style>
+        body { background-color: #0f0f0f; color: #cccccc; font-family: sans-serif; padding: 24px; max-width: 600px; margin: auto; }
+        h1 { color: #ffffff; font-size: 28px; }
+        h2 { color: #d9531e; font-size: 14px; letter-spacing: 1px; margin-top: 24px; text-transform: uppercase; }
+        p, li { font-size: 14px; line-height: 1.5; color: #a0a0a0; }
+        ul { padding-left: 20px; }
+        a { color: #a0a0a0; text-decoration: none; }
+      </style>
+    </head>
+    <body>
+      <h1>Privacy Policy</h1>
+      
+      <h2>WHAT WE COLLECT</h2>
+      <p>When you sign in with Facebook we receive and store:</p>
+      <ul>
+        <li>Your Facebook user id.</li>
+        <li>Your Facebook name.</li>
+        <li>Your Facebook email address, if you have granted the email scope.</li>
+        <li>The IP address that initiated the sign-in.</li>
+      </ul>
 
-    // صفحة سياسة الخصوصية (/privacy)
-    if (path === '/privacy') {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>Privacy Policy</title>
-                <style>
-                    body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 20px; line-height: 1.5; }
-                    h2 { color: #ff5722; font-size: 15px; margin-top: 20px; }
-                    p { font-size: 13px; color: #b0b0b0; }
-                    a { color: #ff5722; text-decoration: none; display: inline-block; margin-top: 20px; }
-                </style>
-            </head>
-            <body>
-                <h2>WHAT WE COLLECT</h2>
-                <p>We collect your basic Facebook profile data authorized during login.</p>
-                <a href="/">&larr; Back</a>
-            </body>
-            </html>
-        `);
-    }
+      <h2>HOW WE USE IT</h2>
+      <p>Your data is used to identify your account, to authenticate you when you return, and to protect the service from abuse.</p>
 
-    // الصفحة الرئيسية
-    if (req.method === 'GET' && !req.headers['x-unity-version'] && !req.headers['user-agent']?.includes('Garena')) {
-        res.setHeader('Content-Type', 'text/html; charset=utf-8');
-        return res.status(200).send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>Authentication Endpoint</title>
-                <style>
-                    body { background-color: #121212; color: #e0e0e0; font-family: sans-serif; padding: 20px; }
-                    p { font-size: 14px; color: #a0a0a0; }
-                    a { color: #ff5722; text-decoration: none; margin-right: 15px; font-size: 12px; }
-                </style>
-            </head>
-            <body>
-                <p>This is the authentication endpoint. It is reached by the game client, not by browsers directly.</p>
-                <div>
-                    <a href="/terms">Terms</a>
-                    <a href="/privacy">Privacy</a>
-                </div>
-            </body>
-            </html>
-        `);
-    }
+      <h2>FACEBOOK TOKENS</h2>
+      <p>The service does not persist Facebook access tokens. Facebook tokens are used once during sign-in to fetch your profile and are then discarded.</p>
 
-    // الاستجابة العامة لطلبات اللعبة
-    res.status(200).json({ status: "online", message: "Auth server active" });
-};
+      <h2>COOKIES</h2>
+      <p>The sign-in flow does not set any authentication cookies. The game client uses a bearer token returned in the redirect fragment.</p>
+
+      <h2>RETENTION</h2>
+      <p>Account records are retained for as long as your account exists.</p>
+
+      <h2>CONTACT</h2>
+      <p>For privacy questions, contact the service operator.</p>
+
+      <br><p><a href="/">← Back</a></p>
+    </body>
+    </html>
+  `);
+});
+
+// 3. صفحة شروط الخدمة (/terms)
+app.get('/terms', (req, res) => {
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Terms of Service</title>
+      <style>
+        body { background-color: #0f0f0f; color: #cccccc; font-family: sans-serif; padding: 24px; max-width: 600px; margin: auto; }
+        h1 { color: #ffffff; font-size: 28px; }
+        h2 { color: #d9531e; font-size: 14px; letter-spacing: 1px; margin-top: 24px; text-transform: uppercase; }
+        p { font-size: 14px; line-height: 1.5; color: #a0a0a0; }
+        a { color: #a0a0a0; text-decoration: none; }
+      </style>
+    </head>
+    <body>
+      <h1>Terms of Service</h1>
+
+      <h2>1. ACCEPTANCE</h2>
+      <p>By using this service you agree to these terms. If you do not agree, do not use the service.</p>
+
+      <h2>2. NATURE OF THE SERVICE</h2>
+      <p>The service is provided as-is for educational and community purposes. Availability, features, and data are not guaranteed and may change at any time.</p>
+
+      <h2>3. FACEBOOK AUTHENTICATION</h2>
+      <p>Sign-in relies on Facebook OAuth. By signing in you allow this service to store your Facebook user id, name, and email so an account can be provisioned.</p>
+
+      <h2>4. PROHIBITED USE</h2>
+      <p>Do not attempt to bypass authentication, abuse the service, or use it for any illegal purpose.</p>
+
+      <br><p><a href="/">← Back</a></p>
+    </body>
+    </html>
+  `);
+});
+
+// 4. مسار توجيه تسجيل الدخول إلى فيسبوك
+app.get('/auth/facebook', (req, res) => {
+  const fbAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=email,public_profile`;
+  res.redirect(fbAuthUrl);
+});
+
+// 5. استقبال الـ Callback واستبدال الـ Code بـ Token
+app.get('/auth/facebook/callback', async (req, res) => {
+  const { code } = req.query;
+  if (!code) return res.status(400).send('No code provided.');
+
+  try {
+    const tokenRes = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
+      params: { client_id: FB_APP_ID, client_secret: FB_APP_SECRET, redirect_uri: REDIRECT_URI, code }
+    });
+
+    const userRes = await axios.get('https://graph.facebook.com/v18.0/me', {
+      params: { fields: 'id,name,email', access_token: tokenRes.data.access_token }
+    });
+
+    res.json({ status: 'success', user: userRes.data });
+  } catch (err) {
+    res.status(500).json({ error: 'Auth failed', details: err.response?.data || err.message });
+  }
+});
+
+module.exports = app;
