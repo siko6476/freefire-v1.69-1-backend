@@ -2,13 +2,19 @@ const express = require('express');
 const axios = require('axios');
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const FB_APP_ID = process.env.FB_APP_ID;
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI || 'https://your-domain.vercel.app/auth/facebook/callback';
+const REDIRECT_URI = process.env.REDIRECT_URI || 'https://version-freefiremobile.vercel.app/auth/facebook/callback';
 
-// 1. الصفحة الرئيسية
+// 1. الصفحة الرئيسية لتأكيد عمل السيرفر
 app.get('/', (req, res) => {
-  res.send('This is the authentication endpoint. It is reached by the game client, not by browsers directly.');
+  res.status(200).json({
+    status: 'online',
+    message: 'Free Fire Auth & Configuration Server is active'
+  });
 });
 
 // 2. صفحة سياسة الخصوصية (/privacy)
@@ -124,6 +130,20 @@ app.get('/auth/facebook/callback', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Auth failed', details: err.response?.data || err.message });
   }
+});
+
+// 6. مسار شامل لكل طلبات اللعبة لتجنب أخطاء 404 وتسجيل البيانات
+app.all('*', (req, res) => {
+  console.log(`[${req.method}] Incoming Request Path: ${req.path}`);
+  if (Object.keys(req.query).length > 0) {
+    console.log('Query Params:', req.query);
+  }
+
+  res.status(200).json({
+    status: 1,
+    message: 'Success',
+    path: req.path
+  });
 });
 
 module.exports = app;
