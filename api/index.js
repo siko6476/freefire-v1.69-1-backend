@@ -1,5 +1,6 @@
-const express = require('express');
-const axios = require('axios');
+const express = require("express");
+const axios = require("axios");
+
 const app = express();
 
 app.use(express.json());
@@ -7,143 +8,209 @@ app.use(express.urlencoded({ extended: true }));
 
 const FB_APP_ID = process.env.FB_APP_ID;
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
-const REDIRECT_URI = process.env.REDIRECT_URI || 'https://version-freefiremobile.vercel.app/auth/facebook/callback';
 
-// 1. الصفحة الرئيسية لتأكيد عمل السيرفر
-app.get('/', (req, res) => {
+const REDIRECT_URI =
+  process.env.REDIRECT_URI ||
+  "https://version-freefiremobile.vercel.app/auth/facebook/callback";
+
+/* =========================
+   BASIC ROUTES
+========================= */
+
+app.get("/", (req, res) => {
   res.status(200).json({
-    status: 'online',
-    message: 'Free Fire Auth & Configuration Server is active'
+    status: "online",
+    message: "Free Fire Auth & Configuration Server is active"
   });
 });
 
-// 2. صفحة سياسة الخصوصية (/privacy)
-app.get('/privacy', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Privacy Policy</title>
-      <style>
-        body { background-color: #0f0f0f; color: #cccccc; font-family: sans-serif; padding: 24px; max-width: 600px; margin: auto; }
-        h1 { color: #ffffff; font-size: 28px; }
-        h2 { color: #d9531e; font-size: 14px; letter-spacing: 1px; margin-top: 24px; text-transform: uppercase; }
-        p, li { font-size: 14px; line-height: 1.5; color: #a0a0a0; }
-        ul { padding-left: 20px; }
-        a { color: #a0a0a0; text-decoration: none; }
-      </style>
-    </head>
-    <body>
-      <h1>Privacy Policy</h1>
-      
-      <h2>WHAT WE COLLECT</h2>
-      <p>When you sign in with Facebook we receive and store:</p>
-      <ul>
-        <li>Your Facebook user id.</li>
-        <li>Your Facebook name.</li>
-        <li>Your Facebook email address, if you have granted the email scope.</li>
-        <li>The IP address that initiated the sign-in.</li>
-      </ul>
-
-      <h2>HOW WE USE IT</h2>
-      <p>Your data is used to identify your account, to authenticate you when you return, and to protect the service from abuse.</p>
-
-      <h2>FACEBOOK TOKENS</h2>
-      <p>The service does not persist Facebook access tokens. Facebook tokens are used once during sign-in to fetch your profile and are then discarded.</p>
-
-      <h2>COOKIES</h2>
-      <p>The sign-in flow does not set any authentication cookies. The game client uses a bearer token returned in the redirect fragment.</p>
-
-      <h2>RETENTION</h2>
-      <p>Account records are retained for as long as your account exists.</p>
-
-      <h2>CONTACT</h2>
-      <p>For privacy questions, contact the service operator.</p>
-
-      <br><p><a href="/">← Back</a></p>
-    </body>
-    </html>
-  `);
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    timestamp: new Date().toISOString()
+  });
 });
 
-// 3. صفحة شروط الخدمة (/terms)
-app.get('/terms', (req, res) => {
-  res.send(`
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Terms of Service</title>
-      <style>
-        body { background-color: #0f0f0f; color: #cccccc; font-family: sans-serif; padding: 24px; max-width: 600px; margin: auto; }
-        h1 { color: #ffffff; font-size: 28px; }
-        h2 { color: #d9531e; font-size: 14px; letter-spacing: 1px; margin-top: 24px; text-transform: uppercase; }
-        p { font-size: 14px; line-height: 1.5; color: #a0a0a0; }
-        a { color: #a0a0a0; text-decoration: none; }
-      </style>
-    </head>
-    <body>
-      <h1>Terms of Service</h1>
+/* =========================
+   REQUEST LOGGER
+========================= */
 
-      <h2>1. ACCEPTANCE</h2>
-      <p>By using this service you agree to these terms. If you do not agree, do not use the service.</p>
+app.use((req, res, next) => {
+  console.log("========== REQUEST ==========");
+  console.log("METHOD:", req.method);
+  console.log("PATH:", req.path);
+  console.log("QUERY:", req.query);
+  console.log("USER-AGENT:", req.headers["user-agent"]);
+  console.log("CONTENT-TYPE:", req.headers["content-type"]);
+  console.log("=============================");
 
-      <h2>2. NATURE OF THE SERVICE</h2>
-      <p>The service is provided as-is for educational and community purposes. Availability, features, and data are not guaranteed and may change at any time.</p>
-
-      <h2>3. FACEBOOK AUTHENTICATION</h2>
-      <p>Sign-in relies on Facebook OAuth. By signing in you allow this service to store your Facebook user id, name, and email so an account can be provisioned.</p>
-
-      <h2>4. PROHIBITED USE</h2>
-      <p>Do not attempt to bypass authentication, abuse the service, or use it for any illegal purpose.</p>
-
-      <br><p><a href="/">← Back</a></p>
-    </body>
-    </html>
-  `);
+  next();
 });
 
-// 4. مسار توجيه تسجيل الدخول إلى فيسبوك
-app.get('/auth/facebook', (req, res) => {
-  const fbAuthUrl = `https://www.facebook.com/v18.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=email,public_profile`;
+/* =========================
+   PRIVACY
+========================= */
+
+app.get("/privacy", (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Privacy Policy</title>
+</head>
+<body>
+<h1>Privacy Policy</h1>
+<p>This service uses Facebook authentication.</p>
+<p>For questions about privacy, contact the service operator.</p>
+<a href="/">Back</a>
+</body>
+</html>
+`);
+});
+
+/* =========================
+   TERMS
+========================= */
+
+app.get("/terms", (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Terms of Service</title>
+</head>
+<body>
+<h1>Terms of Service</h1>
+<p>This service is provided as-is.</p>
+<a href="/">Back</a>
+</body>
+</html>
+`);
+});
+
+/* =========================
+   FACEBOOK LOGIN
+========================= */
+
+app.get("/auth/facebook", (req, res) => {
+  if (!FB_APP_ID) {
+    return res.status(500).send("FB_APP_ID is not configured.");
+  }
+
+  const fbAuthUrl =
+    "https://www.facebook.com/v18.0/dialog/oauth" +
+    `?client_id=${encodeURIComponent(FB_APP_ID)}` +
+    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+    `&scope=${encodeURIComponent("email,public_profile")}`;
+
   res.redirect(fbAuthUrl);
 });
 
-// 5. استقبال الـ Callback واستبدال الـ Code بـ Token
-app.get('/auth/facebook/callback', async (req, res) => {
+/* =========================
+   FACEBOOK CALLBACK
+========================= */
+
+app.get("/auth/facebook/callback", async (req, res) => {
   const { code } = req.query;
-  if (!code) return res.status(400).send('No code provided.');
+
+  if (!code) {
+    return res.status(400).json({
+      status: "error",
+      message: "No Facebook authorization code."
+    });
+  }
+
+  if (!FB_APP_ID || !FB_APP_SECRET) {
+    return res.status(500).json({
+      status: "error",
+      message: "Facebook environment variables are missing."
+    });
+  }
 
   try {
-    const tokenRes = await axios.get('https://graph.facebook.com/v18.0/oauth/access_token', {
-      params: { client_id: FB_APP_ID, client_secret: FB_APP_SECRET, redirect_uri: REDIRECT_URI, code }
-    });
+    const tokenRes = await axios.get(
+      "https://graph.facebook.com/v18.0/oauth/access_token",
+      {
+        params: {
+          client_id: FB_APP_ID,
+          client_secret: FB_APP_SECRET,
+          redirect_uri: REDIRECT_URI,
+          code
+        },
+        timeout: 10000
+      }
+    );
 
-    const userRes = await axios.get('https://graph.facebook.com/v18.0/me', {
-      params: { fields: 'id,name,email', access_token: tokenRes.data.access_token }
-    });
+    const accessToken = tokenRes.data.access_token;
 
-    res.json({ status: 'success', user: userRes.data });
+    const userRes = await axios.get(
+      "https://graph.facebook.com/v18.0/me",
+      {
+        params: {
+          fields: "id,name,email",
+          access_token: accessToken
+        },
+        timeout: 10000
+      }
+    );
+
+    console.log("FACEBOOK USER:", userRes.data);
+
+    res.status(200).json({
+      status: "success",
+      user: userRes.data
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Auth failed', details: err.response?.data || err.message });
+    console.error(
+      "FACEBOOK ERROR:",
+      err.response?.data || err.message
+    );
+
+    res.status(500).json({
+      status: "error",
+      message: "Facebook authentication failed."
+    });
   }
 });
 
-// 6. مسار شامل لكل طلبات اللعبة لتجنب أخطاء 404 وتسجيل البيانات
-app.all('*', (req, res) => {
-  console.log(`[${req.method}] Incoming Request Path: ${req.path}`);
-  if (Object.keys(req.query).length > 0) {
-    console.log('Query Params:', req.query);
-  }
+/* =========================
+   LIVE ENDPOINT
+========================= */
+
+app.get("/live", (req, res) => {
+  console.log("LIVE REQUEST:", req.query);
 
   res.status(200).json({
-    status: 1,
-    message: 'Success',
+    status: "online",
+    endpoint: "/live",
+    message: "Live endpoint reached successfully",
+    timestamp: new Date().toISOString()
+  });
+});
+
+/* =========================
+   UNKNOWN ROUTES
+========================= */
+
+app.use((req, res) => {
+  console.log("UNKNOWN ROUTE:", {
+    method: req.method,
+    path: req.path,
+    query: req.query
+  });
+
+  res.status(404).json({
+    status: "not_found",
     path: req.path
   });
 });
+
+/* =========================
+   EXPORT FOR VERCEL
+========================= */
 
 module.exports = app;
