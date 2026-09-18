@@ -193,6 +193,24 @@ app.get("/live", (req, res) => {
 });
 
 /* =========================
+   VERSION ENDPOINT
+========================= */
+
+app.get("/live/ver.php", (req, res) => {
+  console.log("VERSION CHECK:", req.query);
+
+  res.status(200).json({
+    status: "ok",
+    version: req.query.version || null,
+    lang: req.query.lang || null,
+    device: req.query.device || null,
+    channel: req.query.channel || null,
+    appstore: req.query.appstore || null,
+    region: req.query.region || null
+  });
+});
+
+/* =========================
    UNKNOWN ROUTES
 ========================= */
 
