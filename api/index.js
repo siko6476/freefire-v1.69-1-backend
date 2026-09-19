@@ -183,32 +183,59 @@ app.get("/live", (req, res) => {
   res.status(200).json({
     status: "online",
     endpoint: "/live",
-    timestamp: new Date().toISOString()
+    server_open: true
   });
 });
 
 /* =========================
-   VERSION CHECK
+   VERSION / CONFIGURATION
 ========================= */
 
 app.get("/live/ver.php", (req, res) => {
   console.log("VERSION CHECK:", req.query);
 
   res.status(200).json({
-    status: "ok",
+    appstore_url: "https://example.com/app",
+    billboard_msg: "",
+
+    cdn_url:
+      "https://version-freefiremobile.vercel.app/cdn/",
+
     code: 0,
 
-    version: req.query.version || null,
-    lang: req.query.lang || null,
-    device: req.query.device || null,
-    channel: req.query.channel || null,
-    appstore: req.query.appstore || null,
-    region: req.query.region || null,
+    country_code:
+      req.query.region || "DZ",
 
-    server_open: true,
-    maintenance: false,
+    force_to_restart_app: false,
 
-    timestamp: new Date().toISOString()
+    gdpr_version: 1,
+
+    is_firewall_open: false,
+
+    is_review_server: false,
+
+    is_server_open: true,
+
+    maintenance_announcement: "",
+
+    maintenance_region: "",
+
+    remote_option_version: "project-options:1",
+
+    remote_version:
+      req.query.version || "1.69.1",
+
+    server_url:
+      "https://version-freefiremobile.vercel.app/",
+
+    request: {
+      version: req.query.version || null,
+      lang: req.query.lang || null,
+      device: req.query.device || null,
+      channel: req.query.channel || null,
+      appstore: req.query.appstore || null,
+      region: req.query.region || null
+    }
   });
 });
 
@@ -217,6 +244,8 @@ app.get("/live/ver.php", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
+  console.log("UNKNOWN ROUTE:", req.method, req.path);
+
   res.status(404).json({
     status: "not_found",
     path: req.path
@@ -224,7 +253,7 @@ app.use((req, res) => {
 });
 
 /* =========================
-   VERCEL EXPORT
+   VERCEL
 ========================= */
 
 module.exports = app;
