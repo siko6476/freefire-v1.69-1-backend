@@ -14,13 +14,28 @@ const REDIRECT_URI =
   "https://version-freefiremobile.vercel.app/auth/facebook/callback";
 
 /* =========================
+   REQUEST LOGGER
+========================= */
+
+app.use((req, res, next) => {
+  console.log("========== REQUEST ==========");
+  console.log("METHOD:", req.method);
+  console.log("PATH:", req.path);
+  console.log("QUERY:", req.query);
+  console.log("USER-AGENT:", req.headers["user-agent"]);
+  console.log("=============================");
+
+  next();
+});
+
+/* =========================
    BASIC ROUTES
 ========================= */
 
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "online",
-    message: "Free Fire Auth & Configuration Server is active"
+    message: "Configuration Server is active"
   });
 });
 
@@ -32,27 +47,11 @@ app.get("/health", (req, res) => {
 });
 
 /* =========================
-   REQUEST LOGGER
-========================= */
-
-app.use((req, res, next) => {
-  console.log("========== REQUEST ==========");
-  console.log("METHOD:", req.method);
-  console.log("PATH:", req.path);
-  console.log("QUERY:", req.query);
-  console.log("USER-AGENT:", req.headers["user-agent"]);
-  console.log("CONTENT-TYPE:", req.headers["content-type"]);
-  console.log("=============================");
-
-  next();
-});
-
-/* =========================
    PRIVACY
 ========================= */
 
 app.get("/privacy", (req, res) => {
-  res.send(`
+  res.type("html").send(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -63,7 +62,6 @@ app.get("/privacy", (req, res) => {
 <body>
 <h1>Privacy Policy</h1>
 <p>This service uses Facebook authentication.</p>
-<p>For questions about privacy, contact the service operator.</p>
 <a href="/">Back</a>
 </body>
 </html>
@@ -75,7 +73,7 @@ app.get("/privacy", (req, res) => {
 ========================= */
 
 app.get("/terms", (req, res) => {
-  res.send(`
+  res.type("html").send(`
 <!DOCTYPE html>
 <html>
 <head>
@@ -101,13 +99,15 @@ app.get("/auth/facebook", (req, res) => {
     return res.status(500).send("FB_APP_ID is not configured.");
   }
 
-  const fbAuthUrl =
-    "https://www.facebook.com/v18.0/dialog/oauth" +
-    `?client_id=${encodeURIComponent(FB_APP_ID)}` +
-    `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
-    `&scope=${encodeURIComponent("email,public_profile")}`;
+  const params = new URLSearchParams({
+    client_id: FB_APP_ID,
+    redirect_uri: REDIRECT_URI,
+    scope: "email,public_profile"
+  });
 
-  res.redirect(fbAuthUrl);
+  res.redirect(
+    `https://www.facebook.com/v18.0/dialog/oauth?${params.toString()}`
+  );
 });
 
 /* =========================
@@ -158,8 +158,6 @@ app.get("/auth/facebook/callback", async (req, res) => {
       }
     );
 
-    console.log("FACEBOOK USER:", userRes.data);
-
     res.status(200).json({
       status: "success",
       user: userRes.data
@@ -178,22 +176,19 @@ app.get("/auth/facebook/callback", async (req, res) => {
 });
 
 /* =========================
-   LIVE ENDPOINT
+   LIVE
 ========================= */
 
 app.get("/live", (req, res) => {
-  console.log("LIVE REQUEST:", req.query);
-
   res.status(200).json({
     status: "online",
     endpoint: "/live",
-    message: "Live endpoint reached successfully",
     timestamp: new Date().toISOString()
   });
 });
 
 /* =========================
-   VERSION ENDPOINT
+   VERSION CHECK
 ========================= */
 
 app.get("/live/ver.php", (req, res) => {
@@ -201,26 +196,27 @@ app.get("/live/ver.php", (req, res) => {
 
   res.status(200).json({
     status: "ok",
+    code: 0,
+
     version: req.query.version || null,
     lang: req.query.lang || null,
     device: req.query.device || null,
     channel: req.query.channel || null,
     appstore: req.query.appstore || null,
-    region: req.query.region || null
+    region: req.query.region || null,
+
+    server_open: true,
+    maintenance: false,
+
+    timestamp: new Date().toISOString()
   });
 });
 
 /* =========================
-   UNKNOWN ROUTES
+   404
 ========================= */
 
 app.use((req, res) => {
-  console.log("UNKNOWN ROUTE:", {
-    method: req.method,
-    path: req.path,
-    query: req.query
-  });
-
   res.status(404).json({
     status: "not_found",
     path: req.path
@@ -228,7 +224,7 @@ app.use((req, res) => {
 });
 
 /* =========================
-   EXPORT FOR VERCEL
+   VERCEL EXPORT
 ========================= */
 
 module.exports = app;
