@@ -47,7 +47,7 @@ app.get("/health", (req, res) => {
 });
 
 /* =========================
-   PRIVACY
+   PRIVACY POLICY
 ========================= */
 
 app.get("/privacy", (req, res) => {
@@ -59,10 +59,71 @@ app.get("/privacy", (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy Policy</title>
 </head>
+
 <body>
+
 <h1>Privacy Policy</h1>
-<p>This service uses Facebook authentication.</p>
-<a href="/">Back</a>
+
+<p>
+This is an independent community project.
+It is not affiliated with Garena or Free Fire.
+</p>
+
+<h2>What we collect</h2>
+
+<p>
+When you sign in with Facebook, the service may receive:
+</p>
+
+<ul>
+  <li>Your Facebook user ID.</li>
+  <li>Your Facebook name.</li>
+  <li>Your Facebook email address, if you have granted the email permission.</li>
+</ul>
+
+<h2>How we use it</h2>
+
+<p>
+Your information is used to authenticate your Facebook account
+and provide access to the service.
+</p>
+
+<p>
+We do not sell, share, or trade your personal information with third parties.
+</p>
+
+<h2>Facebook tokens</h2>
+
+<p>
+Facebook access tokens are used during the authentication process
+to retrieve the information required for sign-in.
+The service does not permanently store Facebook access tokens.
+</p>
+
+<h2>Cookies</h2>
+
+<p>
+The Facebook sign-in flow does not use authentication cookies.
+</p>
+
+<h2>Retention</h2>
+
+<p>
+Information received during authentication is used only for the purposes
+described in this Privacy Policy.
+Contact the service operator if you wish to request deletion of your information.
+</p>
+
+<h2>Contact</h2>
+
+<p>
+For privacy questions, contact the service operator.
+</p>
+
+<p>
+<a href="/">← Back</a>
+</p>
+
 </body>
 </html>
 `);
@@ -81,10 +142,24 @@ app.get("/terms", (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Terms of Service</title>
 </head>
+
 <body>
+
 <h1>Terms of Service</h1>
-<p>This service is provided as-is.</p>
-<a href="/">Back</a>
+
+<p>
+This is an independent community project.
+It is not affiliated with Garena or Free Fire.
+</p>
+
+<p>
+This service is provided as-is.
+</p>
+
+<p>
+<a href="/">← Back</a>
+</p>
+
 </body>
 </html>
 `);
@@ -162,7 +237,9 @@ app.get("/auth/facebook/callback", async (req, res) => {
       status: "success",
       user: userRes.data
     });
+
   } catch (err) {
+
     console.error(
       "FACEBOOK ERROR:",
       err.response?.data || err.message
@@ -192,10 +269,14 @@ app.get("/live", (req, res) => {
 ========================= */
 
 app.get("/live/ver.php", (req, res) => {
+
   console.log("VERSION CHECK:", req.query);
 
   res.status(200).json({
-    appstore_url: "https://example.com/app",
+
+    appstore_url:
+      "https://example.com/app",
+
     billboard_msg: "",
 
     cdn_url:
@@ -220,7 +301,8 @@ app.get("/live/ver.php", (req, res) => {
 
     maintenance_region: "",
 
-    remote_option_version: "project-options:1",
+    remote_option_version:
+      "project-options:1",
 
     remote_version:
       req.query.version || "1.69.1",
@@ -236,6 +318,7 @@ app.get("/live/ver.php", (req, res) => {
       appstore: req.query.appstore || null,
       region: req.query.region || null
     }
+
   });
 });
 
@@ -244,12 +327,18 @@ app.get("/live/ver.php", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
-  console.log("UNKNOWN ROUTE:", req.method, req.path);
+
+  console.log(
+    "UNKNOWN ROUTE:",
+    req.method,
+    req.path
+  );
 
   res.status(404).json({
     status: "not_found",
     path: req.path
   });
+
 });
 
 /* =========================
