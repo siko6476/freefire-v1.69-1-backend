@@ -1,3 +1,4 @@
+
 const express = require("express");
 const axios = require("axios");
 
@@ -30,7 +31,6 @@ app.use((req, res, next) => {
   console.log("QUERY:", req.query);
   console.log("USER-AGENT:", req.headers["user-agent"]);
   console.log("=============================");
-
   next();
 });
 
@@ -69,52 +69,21 @@ app.get("/privacy", (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Privacy Policy</title>
 </head>
-
 <body>
-
 <h1>Privacy Policy</h1>
-
-<p>
-This is an independent community project.
-It is not affiliated with Garena or Free Fire.
-</p>
-
+<p>This is an independent community project.
+It is not affiliated with Garena or Free Fire.</p>
 <h2>What we collect</h2>
-
-<p>
-When you sign in with Facebook, the service may receive:
-</p>
-
-<ul>
-<li>Your Facebook user ID.</li>
-<li>Your Facebook name.</li>
-<li>Your Facebook email address, if permission is granted.</li>
-</ul>
-
+<p>When you sign in with Facebook, the service may receive
+your Facebook user ID, name, and email if permission is granted.</p>
 <h2>How we use it</h2>
-
-<p>
-Your information is used to authenticate your Facebook account
-and provide access to the service.
-</p>
-
+<p>Your information is used to authenticate your account
+and provide access to the service.</p>
 <h2>Facebook tokens</h2>
-
-<p>
-Facebook access tokens are used during authentication.
-The service does not permanently store Facebook access tokens.
-</p>
-
+<p>The service does not intentionally store Facebook access tokens permanently.</p>
 <h2>Contact</h2>
-
-<p>
-For privacy questions, contact the service operator.
-</p>
-
-<p>
-<a href="/">Back</a>
-</p>
-
+<p>For privacy questions, contact the service operator.</p>
+<p><a href="/">Back</a></p>
 </body>
 </html>
 `);
@@ -133,24 +102,12 @@ app.get("/terms", (req, res) => {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Terms of Service</title>
 </head>
-
 <body>
-
 <h1>Terms of Service</h1>
-
-<p>
-This is an independent community project.
-It is not affiliated with Garena or Free Fire.
-</p>
-
-<p>
-This service is provided as-is.
-</p>
-
-<p>
-<a href="/">Back</a>
-</p>
-
+<p>This is an independent community project.
+It is not affiliated with Garena or Free Fire.</p>
+<p>This service is provided as-is.</p>
+<p><a href="/">Back</a></p>
 </body>
 </html>
 `);
@@ -161,7 +118,6 @@ This service is provided as-is.
 ========================= */
 
 app.get("/auth/facebook", (req, res) => {
-
   if (!FB_APP_ID) {
     return res.status(500).json({
       status: "error",
@@ -180,10 +136,10 @@ app.get("/auth/facebook", (req, res) => {
     "https://www.facebook.com/v18.0/dialog/oauth?" +
     params.toString();
 
-  console.log("FACEBOOK REDIRECT:", facebookUrl.replace(
-    /client_id=[^&]+/,
-    "client_id=HIDDEN"
-  ));
+  console.log(
+    "FACEBOOK REDIRECT:",
+    facebookUrl.replace(/client_id=[^&]+/, "client_id=HIDDEN")
+  );
 
   return res.redirect(facebookUrl);
 });
@@ -193,17 +149,11 @@ app.get("/auth/facebook", (req, res) => {
 ========================= */
 
 app.get("/auth/facebook/callback", async (req, res) => {
-
   const code = req.query.code;
-
   const fbError = req.query.error;
-  const fbErrorDescription =
-    req.query.error_description;
-
-  /* Facebook returned an error */
+  const fbErrorDescription = req.query.error_description;
 
   if (fbError) {
-
     console.error("FACEBOOK OAUTH ERROR:", {
       error: fbError,
       description: fbErrorDescription
@@ -217,16 +167,12 @@ app.get("/auth/facebook/callback", async (req, res) => {
     });
   }
 
-  /* No authorization code */
-
   if (!code) {
     return res.status(400).json({
       status: "error",
       message: "No Facebook authorization code"
     });
   }
-
-  /* Check environment variables */
 
   if (!FB_APP_ID || !FB_APP_SECRET) {
     return res.status(500).json({
@@ -236,11 +182,6 @@ app.get("/auth/facebook/callback", async (req, res) => {
   }
 
   try {
-
-    /* =========================
-       GET ACCESS TOKEN
-    ========================= */
-
     const tokenRes = await axios.get(
       "https://graph.facebook.com/v18.0/oauth/access_token",
       {
@@ -248,30 +189,20 @@ app.get("/auth/facebook/callback", async (req, res) => {
           client_id: FB_APP_ID,
           client_secret: FB_APP_SECRET,
           redirect_uri: REDIRECT_URI,
-          code: code
+          code
         },
         timeout: 10000
       }
     );
 
-    const accessToken =
-      tokenRes.data.access_token;
+    const accessToken = tokenRes.data.access_token;
 
     if (!accessToken) {
-      console.error(
-        "FACEBOOK TOKEN RESPONSE:",
-        tokenRes.data
-      );
-
       return res.status(500).json({
         status: "error",
         message: "Facebook access token was not returned"
       });
     }
-
-    /* =========================
-       GET FACEBOOK USER
-    ========================= */
 
     const userRes = await axios.get(
       "https://graph.facebook.com/v18.0/me",
@@ -284,17 +215,11 @@ app.get("/auth/facebook/callback", async (req, res) => {
       }
     );
 
-    /* =========================
-       SUCCESS
-    ========================= */
-
     return res.status(200).json({
       status: "success",
       user: userRes.data
     });
-
   } catch (err) {
-
     console.error(
       "FACEBOOK ERROR:",
       err.response?.data || err.message
@@ -321,58 +246,50 @@ app.get("/live", (req, res) => {
 
 /* =========================
    VERSION / CONFIGURATION
+   Test API for this project
 ========================= */
 
 app.get("/live/ver.php", (req, res) => {
-
   console.log("VERSION CHECK:", req.query);
 
   return res.status(200).json({
-
-    appstore_url: "",
-
-    billboard_msg: "",
-
-    cdn_url:
-      `${BASE_URL}/cdn/`,
-
     code: 0,
-
-    country_code:
-      req.query.region || "DZ",
-
-    force_to_restart_app: false,
-
-    gdpr_version: 1,
-
-    is_firewall_open: false,
-
-    is_review_server: false,
-
     is_server_open: true,
-
-    maintenance_announcement: "",
-
-    maintenance_region: "",
-
-    remote_option_version:
-      "project-options:1",
+    is_firewall_open: false,
+    billboard_msg: "",
 
     remote_version:
       req.query.version || "1.69.1",
 
-    server_url:
-      `${BASE_URL}/`,
+    remote_option_version: "project-options:1",
 
-    request: {
-      version: req.query.version || null,
-      lang: req.query.lang || null,
-      device: req.query.device || null,
-      channel: req.query.channel || null,
-      appstore: req.query.appstore || null,
-      region: req.query.region || null
-    }
+    cdn_url: `${BASE_URL}/cdn/`,
+    server_url: `${BASE_URL}/`,
 
+    is_review_server: false,
+    appstore_url: "",
+
+    force_to_restart_app: false,
+
+    country_code:
+      req.query.region || "DZ",
+
+    gdpr_version: 1,
+
+    maintenance_announcement: "",
+    maintenance_region: ""
+  });
+});
+
+/* =========================
+   PROJECT CDN PLACEHOLDER
+========================= */
+
+app.get("/cdn/", (req, res) => {
+  res.status(200).json({
+    status: "online",
+    message: "Project CDN placeholder",
+    content_available: false
   });
 });
 
@@ -381,12 +298,7 @@ app.get("/live/ver.php", (req, res) => {
 ========================= */
 
 app.use((req, res) => {
-
-  console.log(
-    "UNKNOWN ROUTE:",
-    req.method,
-    req.path
-  );
+  console.log("UNKNOWN ROUTE:", req.method, req.path);
 
   return res.status(404).json({
     status: "not_found",
