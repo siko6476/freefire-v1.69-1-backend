@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 // CONFIG
 // =========================
 
-const BASE_URL = "https://gconectn10.vercel.app";
+const BASE_URL = "https://version-freefiremobile.vercel.app";
 
 const FB_APP_ID = process.env.FB_APP_ID;
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
@@ -70,20 +70,15 @@ app.get("/privacy", (req, res) => {
 </head>
 <body>
   <h1>Privacy Policy</h1>
-  <p>This is an independent community project. It is not affiliated with Garena or Free Fire.</p>
-
+  <p>This is an independent community project and is not affiliated with Garena or Free Fire.</p>
   <h2>What we collect</h2>
   <p>When you sign in with Facebook, the service may receive your Facebook user ID, name, and email address if permission is granted.</p>
-
   <h2>How we use it</h2>
   <p>Your information is used to authenticate your Facebook account and provide access to the service.</p>
-
   <h2>Facebook tokens</h2>
   <p>Facebook access tokens are used during authentication and are not permanently stored by this application.</p>
-
   <h2>Contact</h2>
   <p>For privacy questions, contact the service operator.</p>
-
   <p><a href="/">Back</a></p>
 </body>
 </html>`);
@@ -103,7 +98,7 @@ app.get("/terms", (req, res) => {
 </head>
 <body>
   <h1>Terms of Service</h1>
-  <p>This is an independent community project. It is not affiliated with Garena or Free Fire.</p>
+  <p>This is an independent community project and is not affiliated with Garena or Free Fire.</p>
   <p>This service is provided as-is.</p>
   <p><a href="/">Back</a></p>
 </body>
@@ -227,7 +222,7 @@ app.get("/auth/facebook/callback", async (req, res) => {
 });
 
 // =========================
-// LIVE STATUS
+// LIVE
 // =========================
 
 app.get("/live", (req, res) => {
