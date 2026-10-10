@@ -64,18 +64,27 @@ app.get("/privacy", (req, res) => {
   res.type("html").send(`<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Privacy Policy</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Privacy Policy</title>
 </head>
 <body>
-<h1>Privacy Policy</h1>
-<p>This is an independent community project and is not affiliated with Garena or Free Fire.</p>
-<h2>Information</h2>
-<p>If you use Facebook sign-in, the service may receive information permitted by the authorization you grant.</p>
-<h2>Use</h2>
-<p>Information is used to provide the requested sign-in service.</p>
-<p>Contact the service operator for privacy questions.</p>
+  <h1>Privacy Policy</h1>
+  <p>This is an independent community project. It is not affiliated with Garena or Free Fire.</p>
+
+  <h2>What we collect</h2>
+  <p>When you sign in with Facebook, the service may receive your Facebook user ID, name, and email address if permission is granted.</p>
+
+  <h2>How we use it</h2>
+  <p>Your information is used to authenticate your Facebook account and provide access to the service.</p>
+
+  <h2>Facebook tokens</h2>
+  <p>Facebook access tokens are used during authentication and are not permanently stored by this application.</p>
+
+  <h2>Contact</h2>
+  <p>For privacy questions, contact the service operator.</p>
+
+  <p><a href="/">Back</a></p>
 </body>
 </html>`);
 });
@@ -88,14 +97,15 @@ app.get("/terms", (req, res) => {
   res.type("html").send(`<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Terms of Service</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms of Service</title>
 </head>
 <body>
-<h1>Terms of Service</h1>
-<p>This is an independent community project and is not affiliated with Garena or Free Fire.</p>
-<p>This service is provided as-is.</p>
+  <h1>Terms of Service</h1>
+  <p>This is an independent community project. It is not affiliated with Garena or Free Fire.</p>
+  <p>This service is provided as-is.</p>
+  <p><a href="/">Back</a></p>
 </body>
 </html>`);
 });
@@ -137,7 +147,10 @@ app.get("/auth/facebook/callback", async (req, res) => {
   const fbErrorDescription = req.query.error_description;
 
   if (fbError) {
-    console.error("FACEBOOK OAUTH ERROR:", fbError);
+    console.error("FACEBOOK OAUTH ERROR:", {
+      error: fbError,
+      description: fbErrorDescription
+    });
 
     return res.status(400).json({
       status: "error",
@@ -226,7 +239,7 @@ app.get("/live", (req, res) => {
 });
 
 // =========================
-// VERSION / CONFIG
+// VERSION / CONFIGURATION
 // =========================
 
 app.get("/live/ver.php", (req, res) => {
@@ -237,9 +250,6 @@ app.get("/live/ver.php", (req, res) => {
       ? req.query.version
       : "1.69.1";
 
-  // Generic test configuration for this server.
-  // Replace these values only with resources you own
-  // or are authorized to use.
   return res.status(200).json({
     code: 0,
     is_server_open: true,
